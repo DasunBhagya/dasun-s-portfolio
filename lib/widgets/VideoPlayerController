@@ -1,0 +1,275 @@
+import 'package:flutter/material.dart';
+import 'package:myworkflow/constants/colors.dart'; // Adjust import if needed
+import 'package:myworkflow/utils/projects_utils.dart'; // Adjust import if needed
+import 'package:video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import for links
+
+class ProjectDetailsDialog extends StatefulWidget {
+  final ProjectUtils project;
+
+  const ProjectDetailsDialog({super.key, required this.project});
+
+  @override
+  State<ProjectDetailsDialog> createState() => _ProjectDetailsDialogState();
+}
+
+class _ProjectDetailsDialogState extends State<ProjectDetailsDialog> {
+  VideoPlayerController? _controller;
+  Future<void>? _initializeVideoPlayerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize video controller only if a video path exists
+    if (widget.project.videoAssetPath != null &&
+        widget.project.videoAssetPath!.isNotEmpty) {
+      _controller = VideoPlayerController.asset(widget.project.videoAssetPath!);
+      // Use VideoPlayerController.networkUrl(Uri.parse(widget.project.videoUrl!)) for network videos
+      _initializeVideoPlayerFuture = _controller!.initialize().then((_) {
+        // Ensure the first frame is shown after the video is initialized,
+        // even before the play button has been pressed.
+        setState(() {});
+      }).catchError((error) {
+         print("Error initializing video player: $error");
+         // Handle error, maybe set controller to null or show an error message
+         _controller = null;
+      });
+       _controller?.setLooping(true); // Optional: Loop the video
+    }
+  }
+
+  @override
+  void dispose() {
+    // Ensure disposing of the VideoPlayerController to free up resources.
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  // Helper to launch URL
+  Future<void> _launchUrl(String? urlString) async {
+    if (urlString != null && urlString.isNotEmpty) {
+       final Uri url = Uri.parse(urlString);
+       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+          print('Could not launch $url');
+          // Optionally show a snackbar or alert to the user
+       }
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: CustomColor.bglight2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: 700, // Adjust max width as needed
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- Title and Close Button ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded( // Allow title to wrap if long
+                      child: Text(
+                        widget.project.title,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: CustomColor.whitePrimary,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: CustomColor.whitePrimary),
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Close',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                const Divider(color: CustomColor.bglight1),
+                const SizedBox(height: 15),
+
+                // --- Video Player ---
+                if (_controller != null && _controller!.value.isInitialized)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       const Text(
+                          "Demo Video",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: CustomColor.whitePrimary),
+                        ),
+                       const SizedBox(height: 10),
+                      AspectRatio(
+                        aspectRatio: _controller!.value.aspectRatio,
+                        child: VideoPlayer(_controller!),
+                      ),
+                      const SizedBox(height: 8),
+                      // Play/Pause Button
+                      Center(
+                        child: FloatingActionButton(
+                          mini: true,
+                          backgroundColor: CustomColor.yellowPrimary, // Or another color
+                          onPressed: () {
+                            setState(() {
+                              if (_controller!.value.isPlaying) {
+                                _controller!.pause();
+                              } else {
+                                _controller!.play();
+                              }
+                            });
+                          },
+                          child: Icon(
+                            _controller!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white, // Or contrast color
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  )
+                else if (widget.project.videoAssetPath != null) // Show loading indicator or error
+                  const Center(child: CircularProgressIndicator()),
+
+
+                // --- Full Description ---
+                if (widget.project.fullDescription != null && widget.project.fullDescription!.isNotEmpty)
+                  Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       const Text(
+                        "Description",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: CustomColor.whitePrimary),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        widget.project.fullDescription!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: CustomColor.whiteSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                       const SizedBox(height: 20),
+                    ],
+                  ),
+
+                // --- Technologies ---
+                if (widget.project.technologies != null && widget.project.technologies!.isNotEmpty)
+                 Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Technologies Used",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: CustomColor.whitePrimary),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: widget.project.technologies!
+                            .map((tech) => Chip(
+                                  label: Text(tech),
+                                  backgroundColor: CustomColor.bglight1,
+                                  labelStyle: const TextStyle(
+                                      color: CustomColor.whiteSecondary,
+                                      fontSize: 12),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+
+
+                // --- Detail Images ---
+                if (widget.project.detailImages != null && widget.project.detailImages!.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "More Images",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: CustomColor.whitePrimary),
+                      ),
+                      const SizedBox(height: 10),
+                      // Simple horizontal scroll for images
+                      SizedBox(
+                        height: 150, // Adjust height as needed
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.project.detailImages!.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 10.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.asset(
+                                  widget.project.detailImages![index],
+                                  fit: BoxFit.cover,
+                                   height: 150,
+                                   // width: 200, // Optional: Set width
+                                   errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.image_not_supported, size: 50),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                       const SizedBox(height: 20),
+                    ],
+                  ),
+
+                // --- Links ---
+                Row(
+                   mainAxisAlignment: MainAxisAlignment.end,
+                   children: [
+                       if(widget.project.githubLink != null)
+                         Padding(
+                           padding: const EdgeInsets.only(left: 10.0),
+                           child: IconButton(
+                             icon: Image.asset("assets/github_icon.png", width: 20,), // Make sure you have this asset
+                             tooltip: 'GitHub Repository',
+                             onPressed: () => _launchUrl(widget.project.githubLink),
+                           ),
+                         ),
+                        if(widget.project.webLink != null)
+                         Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: IconButton(
+                              icon: Image.asset("assets/web_icon.png", width: 20,), // Make sure you have this asset
+                              tooltip: 'Live Demo / Website',
+                              onPressed: () => _launchUrl(widget.project.webLink),
+                           ),
+                         ),
+                   ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

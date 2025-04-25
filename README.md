@@ -1,16 +1,18 @@
-# myworkflow
+Dasun Bhagya's Portfolio App - Built with Flutter  
 
-A new Flutter project.
+A modern, responsive portfolio app showcasing my projects, skills, and experience. Developed usingFlutter & Dart language,   
 
-## Getting Started
+ **Features** under devolopment stage 
+✅ **Responsive Design** – Works on mobile, tablet, and web  
+✅ **Interactive UI** – Smooth animations & engaging user experience  
+✅ **Project Showcase** – Displays my work with details & links  
+❌ Dark/Light Mode   
+❌ Contact Integration
 
-This project is a starting point for a Flutter application.
+Built with: Flutter SDK, Dart  
 
-A few resources to get you started if this is your first Flutter project:
+🔗 Live on netlify : dasunbworkflow.netlify.app  
+    
+Why i use Flutter?  
+Flutter allows for a single codebase across multiple platforms, ensuring fast performance and a consistent look. This portfolio demonstrates my ability to build scalable, maintainable apps with modern development practices.  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

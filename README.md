@@ -11,7 +11,7 @@ A modern, responsive portfolio app showcasing my projects, skills, and experienc
 
 Built with: Flutter SDK, Dart  
 
-🔗 Live on netlify : dasunbworkflow.netlify.app  
+🔗 Live on netlify : [dasunbworkflow.netlify.app  ](https://dasunbworkflow.netlify.app/)
     
 Why i use Flutter?  
 Flutter allows for a single codebase across multiple platforms, ensuring fast performance and a consistent look. This portfolio demonstrates my ability to build scalable, maintainable apps with modern development practices.  
